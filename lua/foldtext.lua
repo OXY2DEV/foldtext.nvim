@@ -511,6 +511,8 @@ foldtext.setup = function (config_table)
 	vim.o.fillchars = "fold: "
 	vim.o.foldtext = "v:lua.require('foldtext').text()";
 
+	foldtext.configuraton = vim.tbl_extend("force", foldtext.configuraton, config_table or {});
+
 	vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 		callback = function (event)
 			local windows = foldtext.list_buf_wins(event.buf);

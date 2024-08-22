@@ -71,20 +71,22 @@ Try setting your `foldmethod` to `indent` and see what this code block looks lik
 </detail>
 ```
 
-This also works in other `foldme.s` too!
+You will see something like this.
+
+![md_fold](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_fold_1.jpg)
+
+This also works in other `foldmethods` too!
 
 ### 📜 Lua
 
 In a `lua` file, if a fold's starting line contains `${}` with some text inside this will render as a custom fold.
 
-For example, folding this text
+For example, folding this text,
 
 ```lua
 -- ${default}
 vim.print("Hello neovim");
 ```
-
-Results in something like this.
 
 You can also add titles to your folds.
 
@@ -97,6 +99,7 @@ end
 
 This becomes something like this,
 
+![lua_fold](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_fold_2.jpg)
 
 They also have various options,
 
@@ -107,6 +110,8 @@ They also have various options,
 - hl, shows a palette symbol
 - calc, shows a calculator
 - dep, shows a box
+
+![lua_fold_2](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_fold_3.jpg)
 
 ## 🔩 Configuration options
 

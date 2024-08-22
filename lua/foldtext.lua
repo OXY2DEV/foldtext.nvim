@@ -109,55 +109,6 @@ foldtext.configuration = {
 
 	custom = {
 		{
-			---+ ${conf, Foldtext for indent based folds}
-			condition = function (win, _)
-				if vim.wo[win].foldmethod == "indent" then
-					return true;
-				else
-					return false;
-				end
-			end,
-			config = {
-				{
-					type = "indent",
-				},
-				{
-					type = "raw",
-					text = "...",
-					hl = "TabLineSel"
-				},
-				{
-					type = "custom",
-					handler = function (_, buf)
-						local comment = vim.bo[buf].commentstring;
-						local before = comment:match("(.-)%%s")
-
-						return { " " .. before .. (before:match("(%s)$") and "" or " "), "Comment" };
-					end
-				},
-				{
-					type = "fold_size",
-				},
-				{
-					type = "raw",
-					text = " lines folded!",
-					hl = "Comment"
-				},
-				{
-					type = "custom",
-					handler = function (_, buf)
-						local comment = vim.bo[buf].commentstring;
-						local after = comment:match("%%s(.*)")
-
-						return { (after:match("(^%s)") and "" or " ") .. after, "Comment" };
-					end
-				},
-			}
-			---_
-		},
-
-
-		{
 			---+ ${conf, Markdown detail tag foldtext}
 			ft = { "markdown" },
 			condition = function (_, buf)
@@ -172,7 +123,7 @@ foldtext.configuration = {
 			config = {
 				{
 					type = "indent",
-					hl = "TabLineSel"
+					hl = "Normal"
 				},
 				{
 					type = "raw",
@@ -215,7 +166,7 @@ foldtext.configuration = {
 						local tags = {
 							default = { "  " },
 							conf = { "  ", "Title" },
-							ui = { " 󰨵", nil },
+							ui = { " 󰨵 ", nil },
 							func = { " 󰡱 ", nil },
 							hl = { "  ", nil },
 							calc = { " 󰃬 ", nil },
@@ -349,6 +300,55 @@ foldtext.configuration = {
 						};
 					end
 				}
+			}
+			---_
+		},
+
+
+		{
+			---+ ${conf, Foldtext for indent based folds}
+			condition = function (win, _)
+				if vim.wo[win].foldmethod == "indent" then
+					return true;
+				else
+					return false;
+				end
+			end,
+			config = {
+				{
+					type = "indent",
+				},
+				{
+					type = "raw",
+					text = "...",
+					hl = "TabLineSel"
+				},
+				{
+					type = "custom",
+					handler = function (_, buf)
+						local comment = vim.bo[buf].commentstring;
+						local before = comment:match("(.-)%%s")
+
+						return { " " .. before .. (before:match("(%s)$") and "" or " "), "Comment" };
+					end
+				},
+				{
+					type = "fold_size",
+				},
+				{
+					type = "raw",
+					text = " lines folded!",
+					hl = "Comment"
+				},
+				{
+					type = "custom",
+					handler = function (_, buf)
+						local comment = vim.bo[buf].commentstring;
+						local after = comment:match("%%s(.*)")
+
+						return { (after:match("(^%s)") and "" or " ") .. after, "Comment" };
+					end
+				},
 			}
 			---_
 		},

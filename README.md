@@ -55,6 +55,59 @@ You can install the plugin via `rocks.nvim` with the following command.
 :Rocks install foldtext.nvim
 ```
 
+## 🧭 Example usage
+
+### 📜 Markdown
+
+Folds in markdown starting with a line containing `<summary></summary>` will show the text inside it.
+
+Try setting your `foldmethod` to `indent` and see what this code block looks like.
+
+```md
+<detail>
+    <summary>An example summary</summary>
+
+    Some text
+</detail>
+```
+
+This also works in other `foldme.s` too!
+
+### 📜 Lua
+
+In a `lua` file, if a fold's starting line contains `${}` with some text inside this will render as a custom fold.
+
+For example, folding this text
+
+```lua
+-- ${default}
+vim.print("Hello neovim");
+```
+
+Results in something like this.
+
+You can also add titles to your folds.
+
+```lua
+-- ${func, A helper function}
+local function test()
+    vim.print("Test");
+end
+```
+
+This becomes something like this,
+
+
+They also have various options,
+
+- default, shows the lua logo
+- conf, shows a cog
+- ui, shows a phone
+- func, shows a function symbol
+- hl, shows a palette symbol
+- calc, shows a calculator
+- dep, shows a box
+
 ## 🔩 Configuration options
 
 Foldtext's configuration table is as follows

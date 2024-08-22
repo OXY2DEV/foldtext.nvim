@@ -72,7 +72,7 @@ foldtext.configuration = {
 	ft_ignore = {},
 
 	default = {
-		---+ ${conf= Default foldtext}
+		---+ ${conf,Default foldtext}
 		{
 			type = "raw",
 			text = function (win)
@@ -109,7 +109,7 @@ foldtext.configuration = {
 
 	custom = {
 		{
-			---+ ${conf= Foldtext for indent based folds}
+			---+ ${conf, Foldtext for indent based folds}
 			condition = function (win, _)
 				if vim.wo[win].foldmethod == "indent" then
 					return true;
@@ -158,7 +158,7 @@ foldtext.configuration = {
 
 
 		{
-			---+ ${conf= Markdown detail tag foldtext}
+			---+ ${conf, Markdown detail tag foldtext}
 			ft = { "markdown" },
 			condition = function (_, buf)
 				local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
@@ -191,12 +191,65 @@ foldtext.configuration = {
 			---_
 		},
 		{
-			---+ ${conf= Conf-doc link folds}
+			---+ ${conf, Identifier folds}
+			ft = { "lua" },
 			condition = function (_, buf)
-				if vim.bo[buf].filetype ~= "lua" then
+				local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
+
+				if ln:match("%${(.+),?.*}") then
+					return true;
+				else
 					return false;
 				end
+			end,
+			config = {
+				{
+					type = "indent"
+				},
+				{
+					type = "custom",
+					handler = function (_, buf)
+						local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
+						local tag = ln:match("%${(%a+).*}");
 
+						local tags = {
+							default = { "  " },
+							conf = { "  ", "Title" },
+							ui = { " 󰨵", nil },
+							func = { " 󰡱 ", nil },
+							hl = { "  ", nil },
+							calc = { " 󰃬 ", nil },
+							dep = { "  ", nil }
+						};
+
+						return not tags[tag] and tags.default or tags[tag];
+					end
+				},
+				{
+					type = "custom",
+					handler = function (_, buf)
+						local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
+						local txt = ln:match("%${.+,(.*)}") or " Fold";
+
+						return { txt:gsub("^%s*", "") .. ", ", "Comment" };
+					end
+				},
+				{
+					type = "fold_size",
+					hl = "Title"
+				},
+				{
+					type = "raw",
+					text = " lines",
+					hl = "Comment"
+				}
+			}
+			---_
+		},
+		{
+			---+ ${conf, Conf-doc link folds}
+			ft = { "lua" },
+			condition = function (_, buf)
 				local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
 
 				if ln:match("%${(link)=.-}") then

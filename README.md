@@ -81,7 +81,7 @@ This also works in other `foldmethods` too!
 
 In a `lua` file, if a fold's starting line contains `${}` with some text inside this will render as a custom fold.
 
-For example, folding this text,
+For example, folding this text will show a lua icon on the fold text
 
 ```lua
 -- ${default}

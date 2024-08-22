@@ -1,5 +1,10 @@
 # 📂 Foldtext.nvim
 
+![demo_1](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_demo_1.jpg)
+![demo_2](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_demo_2.jpg)
+![demo_3](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_demo_3.jpg)
+![demo_4](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_demo_4.jpg)
+
 A *fancier* way to fold your code.
 
 ## ✨ Features

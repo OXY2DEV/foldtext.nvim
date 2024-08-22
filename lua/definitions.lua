@@ -42,7 +42,7 @@
 ---@field type string
 ---
 --- The string to show
----@field text string
+---@field text string | fun(win: number, buf: number): string
 ---
 --- Highlight group for text
 ---@field hl (string | string[])?

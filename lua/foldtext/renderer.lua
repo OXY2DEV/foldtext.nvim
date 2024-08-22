@@ -54,7 +54,7 @@ end;
 ---@param config foldtext.config.size
 ---@return table
 renderer.fold_size = function (config)
-	return { (config.prefix or "") .. tostring(vim.v.foldend - vim.v.foldstart) .. (config.postfix or ""), config.hl }
+	return { (config.prefix or "") .. tostring(vim.v.foldend - vim.v.foldstart + 1) .. (config.postfix or ""), config.hl }
 end
 
 --- Indent renderer

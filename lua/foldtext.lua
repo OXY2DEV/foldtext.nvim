@@ -319,20 +319,24 @@ foldtext.text = function (window, buffer)
 	end
 
 	for _, custom in ipairs(foldtext.configuration.custom or {}) do
-		if custom.ft and vim.list_contains(custom.ft, vim.bo[buffer].filetype) then
-			conf = custom.config;
-			break;
+		if custom.ft and not vim.list_contains(custom.ft, vim.bo[buffer].filetype) then
+			goto ignore;
 		end
 
 		if custom.bt and vim.list_contains(custom.bt, vim.bo[buffer].buftype) then
-			conf = custom.config;
-			break;
+			goto ignore;
 		end
 
-		if custom.condition and pcall(custom.condition, window, buffer) and custom.condition(window, buffer) == true then
-			conf = custom.config;
-			break;
+		if custom.condition and pcall(custom.condition, window, buffer) then
+			if custom.condition(window, buffer) == false then
+				goto ignore;
+			else
+				conf = custom.config;
+				break;
+			end
 		end
+
+		::ignore::
 	end
 
 	for _, part in ipairs(conf) do

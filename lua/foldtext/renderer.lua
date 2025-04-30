@@ -50,21 +50,4 @@ renderer.raw = function (config)
 	end
 end;
 
---- Fold size renderer
----@param config foldtext.config.size
----@return table
-renderer.fold_size = function (config)
-	return { (config.prefix or "") .. tostring(vim.v.foldend - vim.v.foldstart + 1) .. (config.postfix or ""), config.hl }
-end
-
---- Indent renderer
----@param config foldtext.config.indent
----@param buffer number
----@return table
-renderer.indent = function (config, buffer)
-	local line = table.concat(vim.fn.getbufline(buffer, vim.v.foldstart));
-
-	return { line:match("^(%s*)"), config.hl };
-end
-
 return renderer;

@@ -5,11 +5,11 @@
 ![demo_3](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_demo_3.jpg)
 ![demo_4](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_demo_4.jpg)
 
-A *fancier* way to fold your code.
+*Fancy* foldtext for `Neovim`.
 
 ## ✨ Features
 
-- Dynamic foldtext. Can be customised *per-buffer* & *per-window*.
+- Per window foldtext setup, allows showing different foldtext in different windows!
 - Allows customizing the foldtext with parts to make the process easier. Each part can also be individually enabled/disabled.
 - Completely different foldtext based on *filetype*, *buftype* & conditions.
 

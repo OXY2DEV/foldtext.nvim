@@ -1,10 +1,49 @@
 --- Components for the fold text.
 local components = {};
 
-components.bufline = function (buffer, window, config, foldstart, foldend)
-	---|fS
+---@param val any
+---@param ... any
+---@return table
+local function eval (val, ...)
+	---|fS "doc: Evaluates given value"
 
-	local start, stop = vim.fn.getbufline(buffer, foldstart or vim.v.foldstart)[1], vim.fn.getbufline(buffer, foldend or vim.v.foldend)[1];
+	local primary_eval = {};
+
+	if type(val) == "table" then
+		primary_eval = val;
+	elseif type(val) == "function" then
+		local can_eval, new_val = pcall(val, ...);
+
+		if can_eval and type(new_val) == "table" then
+			primary_eval = new_val;
+		else
+			return { kind = "" };
+		end
+	else
+		return { kind = "" };
+	end
+
+	for k, v in pairs(primary_eval) do
+		if k ~= "condition" and type(v) == "function" then
+			local can_eval, new_val = pcall(v, ...);
+
+			if can_eval and new_val ~= nil then
+				primary_eval[k] = new_val;
+			else
+				primary_eval[k] = nil;
+			end
+		end
+	end
+
+	return primary_eval;
+
+	---|fE
+end
+
+components.bufline = function (buffer, window, config)
+	---|fS "doc: Tree-sitter highlighted text"
+
+	local start, stop = vim.fn.getbufline(buffer, vim.v.foldstart)[1], vim.fn.getbufline(buffer, vim.v.foldend)[1];
 	local fragments = {};
 	local virtcol = 0;
 
@@ -20,7 +59,7 @@ components.bufline = function (buffer, window, config, foldstart, foldend)
 	for p, part in ipairs(vim.fn.split(start, "\\zs")) do
 		---|fS "func: Start line of fold."
 
-		local hl_captures = vim.treesitter.get_captures_at_pos(buffer, (foldstart or vim.v.foldstart) - 1, p - 1);
+		local hl_captures = vim.treesitter.get_captures_at_pos(buffer, vim.v.foldstart - 1, p - 1);
 
 		if d <= virtcol then
 			goto continue;
@@ -43,6 +82,10 @@ components.bufline = function (buffer, window, config, foldstart, foldend)
 		---|fE
 	end
 
+	if type(config.delimiter) ~= "string" then
+		return fragments;
+	end
+
 	local whitespace = vim.fn.strchars(string.match(stop, "^%s*"));
 
 	if config.delimiter then
@@ -63,7 +106,7 @@ components.bufline = function (buffer, window, config, foldstart, foldend)
 	for p, part in ipairs(vim.fn.split(stop, "\\zs")) do
 		---|fS "func: End line of fold."
 
-		local hl_captures = vim.treesitter.get_captures_at_pos(buffer, (foldend or vim.v.foldend) - 1, p - 1);
+		local hl_captures = vim.treesitter.get_captures_at_pos(buffer, vim.v.foldend - 1, p - 1);
 
 		if p <= whitespace or d <= virtcol then
 			goto continue;
@@ -91,8 +134,8 @@ components.bufline = function (buffer, window, config, foldstart, foldend)
 	---|fE
 end
 
-components.description = function (buffer, _, config, foldstart, foldend)
-	---|fS
+components.description = function (buffer, _, config)
+	---|fS "doc: Conventional commits style messages"
 
 	local kind_styles = vim.tbl_deep_extend("force", {
 		---|fS "style: Styles for different messages"
@@ -135,7 +178,7 @@ components.description = function (buffer, _, config, foldstart, foldend)
 	end
 
 	local line = table.concat(
-		vim.fn.getbufline(buffer, foldstart or vim.v.foldstart)
+		vim.fn.getbufline(buffer, vim.v.foldstart)
 	);
 	local message = string.match(line, config.pattern or "[\"'](.+)[\"']");
 
@@ -166,11 +209,12 @@ components.description = function (buffer, _, config, foldstart, foldend)
 	---|fE
 end
 
---- Fold size.
 ---@param buffer integer
 ---@param config table
 ---@return table
-components.section = function (buffer, _, config, foldstart, foldend)
+components.section = function (buffer, _, config)
+	---|fS
+
 	if vim.islist(config.output) then
 		return config.output;
 	elseif type(config.output) == "function" then
@@ -179,37 +223,48 @@ components.section = function (buffer, _, config, foldstart, foldend)
 	end
 
 	return {};
+
+	---|fE
 end
 
---- Fold size.
 ---@param config table
 ---@return table
-components.fold_size = function (_, _, config, foldstart, foldend)
-	local size = ((foldend or vim.v.foldend) - (foldstart or vim.v.foldstart)) + 1;
+components.fold_size = function (_, _, config)
+	---|fS "doc: Fold size"
+
+	local size = (vim.v.foldend - vim.v.foldstart) + 1;
 
 	return {
-		{ config.padding_left or "", config.icon_hl or config.hl },
+		{ config.padding_left or "", config.padding_left_hl or config.hl },
 		{ config.icon or "", config.icon_hl or config.hl },
 		{ tostring(size), config.hl },
-		{ config.padding_right or "", config.icon_hl or config.hl },
-	}
+		{ config.padding_right or "", config.padding_right_hl or config.hl },
+	};
+
+	---|fE
 end
 
 --- Indentation.
 ---@param buffer number
 ---@param config table
 ---@return table
-components.indent = function (buffer, window, config, foldstart, foldend)
+components.indent = function (buffer, _, config)
+	---|fS "doc: Indentation"
+
 	local line = table.concat(
-		vim.fn.getbufline(buffer, foldstart or vim.v.foldstart)
+		vim.fn.getbufline(buffer, vim.v.foldstart)
 	);
 
 	return {
 		{ line:match("^(%s*)"), config.hl }
 	};
+
+	---|fE
 end
 
-components.handle = function (items, ...)
+components.handle = function (items, buffer, window)
+	---|fS
+
 	if vim.islist(items) == false then
 		return {};
 	end
@@ -217,24 +272,29 @@ components.handle = function (items, ...)
 	local output = {};
 
 	for _, item in ipairs(items) do
-		---@class Args
-		---
-		---@field [1] integer
-		---@field [2] integer
-		---@field [3] table
-		---@field [4] integer?
-		---@field [5] integer?
-		local args = { ... };
-		table.insert(args, 3, item);
+		local _item = eval(item, buffer, window, output);
+		local can_call, result;
 
-		local can_call, result = pcall(components[item.kind or item.type or ""], unpack(args));
+		if _item.condition then
+			local ran_condition, case = pcall(_item.condition, buffer, window, output);
+
+			if ran_condition and case == false then
+				goto continue;
+			end
+		end
+
+		can_call, result = pcall(components[_item.kind or ""], buffer, window, item, output);
 
 		if can_call and result then
 			output = vim.list_extend(output, result);
 		end
+
+		::continue::
 	end
 
 	return output;
+
+	---|fE
 end
 
 return components;

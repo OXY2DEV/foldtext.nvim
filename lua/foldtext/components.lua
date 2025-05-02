@@ -40,21 +40,24 @@ local function eval (val, ...)
 	---|fE
 end
 
-components.bufline = function (buffer, window, config)
+components.bufline = function (buffer, _, config)
 	---|fS "doc: Tree-sitter highlighted text"
 
 	local start, stop = vim.fn.getbufline(buffer, vim.v.foldstart)[1], vim.fn.getbufline(buffer, vim.v.foldend)[1];
 	local fragments = {};
-	local virtcol = 0;
+	local virtcol = -1;
 
 	local d = 0;
 
-	vim.api.nvim_win_call(window, function ()
-		local view = vim.fn.winsaveview();
-		virtcol = view.leftcol or 0;
-	end);
-
-	virtcol = virtcol - 1;
+	-- BUG, We can't properly scroll over tabs.
+	-- Solution: Disable scrolling for now.
+	--
+	-- vim.api.nvim_win_call(window, function ()
+	-- 	local view = vim.fn.winsaveview();
+	-- 	virtcol = view.leftcol or 0;
+	-- end);
+	--
+	-- virtcol = virtcol - 1;
 
 	for p, part in ipairs(vim.fn.split(start, "\\zs")) do
 		---|fS "func: Start line of fold."

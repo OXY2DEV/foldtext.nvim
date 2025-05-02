@@ -1,46 +1,50 @@
 local foldtext = {};
 local components = require("foldtext.components")
 
-foldtext.ns = vim.api.nvim_create_namespace("foldtext");
-
 ---@type string The value of 'foldtext'.
 foldtext.FDT = "v:lua.require('foldtext').foldtext(%d,%d)";
 
 foldtext.config = {
-	external_styles = { "fallback" },
-
 	styles = {
 		default = {
 			---|fS "config: Default configuration"
-			{
-				kind = "indent",
-			},
-			{
-				kind = "description",
-
-				output = {
-					{ "hi", "Special" }
-				}
-			},
+			{ kind = "indent", },
+			{ kind = "description" },
 			{
 				kind = "fold_size",
+				condition = function (_, _, items)
+					return #items > 1;
+				end,
 
 				padding_left = " ",
 				icon = "󰘖 ",
 
 				hl = "@conditional"
+			},
+			{
+				kind = "fold_size",
+				condition = function (_, _, items)
+					return #items == 1;
+				end,
+
+				icon = "󰘖 ",
+				padding_right = " lines folded!",
+
+				padding_right_hl = "@comment",
+				icon_hl = "@conditional",
+				hl = "@number",
 			}
 			---|fE
 		},
 
 		fallback = {
 			condition = function (_, window)
-				return vim.wo[window].foldmethod == "expr" and vim.wo[window].foldexpr == "vim.treesitter.foldexpr()";
+				return vim.wo[window].foldmethod == "expr" and vim.wo[window].foldexpr == "v:lua.vim.treesitter.foldexpr()";
 			end,
 
 			parts = {
 				{
-					kind = "section",
+					kind = "bufline",
 
 					delimiter = " ... ",
 					hl = "@comment"
@@ -50,12 +54,17 @@ foldtext.config = {
 	}
 };
 
+--- Detaches from the windows containing
+--- `buffer`
+---@param buffer integer
 foldtext.detach = function (buffer)
 	---|fS
 
+	---@type string Pattern for our foldtext.
 	local pattern = string.format(foldtext.FDT, "%d+");
 
 	for _, win in ipairs(vim.fn.win_findbuf(buffer)) do
+		---@type string The window's foldtext.
 		local _foldtext = vim.wo[win].foldtext;
 
 		if string.match(_foldtext, pattern) then
@@ -67,7 +76,11 @@ foldtext.detach = function (buffer)
 	---|fE
 end
 
+--- Sets the necessary options for the foldtext.
+---@param win integer
 foldtext.set_opt = function (win)
+	---|fS
+
 	local fillchars = vim.wo[win].fillchars;
 
 	if not fillchars or fillchars == "" then
@@ -77,6 +90,8 @@ foldtext.set_opt = function (win)
 	else
 		vim.wo[win].fillchars = fillchars .. ",fold: ";
 	end
+
+	---|fE
 end
 
 ---@param buffer integer

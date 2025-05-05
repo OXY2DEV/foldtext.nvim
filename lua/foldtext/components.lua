@@ -40,6 +40,11 @@ local function eval (val, ...)
 	---|fE
 end
 
+--- Shows tree-sitter highlighted text as foldtext.
+---@param buffer integer
+---@param _ integer
+---@param config foldtext.bufline
+---@return foldtext.fragment[]
 components.bufline = function (buffer, _, config)
 	---|fS "doc: Tree-sitter highlighted text"
 
@@ -137,6 +142,11 @@ components.bufline = function (buffer, _, config)
 	---|fE
 end
 
+--- Conventional commit style messages.
+---@param buffer integer
+---@param _ integer
+---@param config foldtext.description
+---@return foldtext.fragment[]
 components.description = function (buffer, _, config)
 	---|fS "doc: Conventional commits style messages"
 
@@ -192,9 +202,9 @@ components.description = function (buffer, _, config)
 		local style = kind_style(kind);
 
 		return {
-			{ style.icon or "", style.icon_hl },
-			{ string.format(style.scope_format or "%s", scope), style.scope_hl },
-			{ style.separator or ", ", style.separator_hl },
+			{ style.icon or "", style.icon_hl or style.hl },
+			{ string.format(style.scope_format or "%s", scope), style.scope_hl or style.hl },
+			{ style.separator or ", ", style.separator_hl or style.hl },
 			{ desc, style.hl },
 		};
 	elseif string.match(message, "^(.-)[:,]%s*(.+)$") then
@@ -202,7 +212,7 @@ components.description = function (buffer, _, config)
 		local style = kind_style(kind);
 
 		return {
-			{ style.icon or "", style.icon_hl },
+			{ style.icon or "", style.icon_hl or style.hl },
 			{ desc, style.hl },
 		};
 	else
@@ -213,8 +223,8 @@ components.description = function (buffer, _, config)
 end
 
 ---@param buffer integer
----@param config table
----@return table
+---@param config foldtext.section
+---@return foldtext.fragment[]
 components.section = function (buffer, _, config)
 	---|fS
 
@@ -230,7 +240,7 @@ components.section = function (buffer, _, config)
 	---|fE
 end
 
----@param config table
+---@param config foldtext.fold_size
 ---@return table
 components.fold_size = function (_, _, config)
 	---|fS "doc: Fold size"
@@ -249,8 +259,8 @@ end
 
 --- Indentation.
 ---@param buffer number
----@param config table
----@return table
+---@param config foldtext.indent
+---@return foldtext.fragment[]
 components.indent = function (buffer, _, config)
 	---|fS "doc: Indentation"
 
@@ -265,6 +275,10 @@ components.indent = function (buffer, _, config)
 	---|fE
 end
 
+---@param items foldtext_part[]
+---@param buffer integer
+---@param window integer
+---@return foldtext.fragment[]
 components.handle = function (items, buffer, window)
 	---|fS
 

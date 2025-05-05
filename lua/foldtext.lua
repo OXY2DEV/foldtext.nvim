@@ -4,6 +4,7 @@ local components = require("foldtext.components")
 ---@type string The value of 'foldtext'.
 foldtext.FDT = "v:lua.require('foldtext').foldtext(%d,%d)";
 
+---@type foldtext.config
 foldtext.config = {
 	styles = {
 		default = {
@@ -12,8 +13,8 @@ foldtext.config = {
 			{ kind = "description" },
 			{
 				kind = "fold_size",
-				condition = function (_, _, items)
-					return #items > 1;
+				condition = function (_, _, parts)
+					return #parts > 1;
 				end,
 
 				padding_left = " ",
@@ -23,8 +24,8 @@ foldtext.config = {
 			},
 			{
 				kind = "fold_size",
-				condition = function (_, _, items)
-					return #items == 1;
+				condition = function (_, _, parts)
+					return #parts == 1;
 				end,
 
 				icon = "󰘖 ",
@@ -142,11 +143,17 @@ foldtext.attach = function (buffer)
 		local fdID = "default";
 
 		for _, k in ipairs(keys) do
+			local style = foldtext.config.styles[k];
+
 			if k == "default" then
 				goto continue;
-			end
+			elseif foldtext.config.condition then
+				local ran_cond, cond = pcall(foldtext.config.condition, buffer, win);
 
-			local style = foldtext.config.styles[k];
+				if ran_cond and not cond then
+					goto continue;
+				end
+			end
 
 			if is_valid_style(style, win) then
 				fdID = k;
@@ -156,14 +163,12 @@ foldtext.attach = function (buffer)
 			::continue::
 		end
 
-		if vim.list_contains(foldtext.config.external_styles or {}, fdID) == false then
-			vim.w[win].__fdID = fdID;
+		vim.w[win].__fdID = fdID;
 
-			foldtext.set_opt(win);
-			vim.wo[win].foldtext = string.format(foldtext.FDT, buffer, win);
+		foldtext.set_opt(win);
+		vim.wo[win].foldtext = string.format(foldtext.FDT, buffer, win);
 
-			return;
-		end
+		return;
 	end
 
 	---|fE
@@ -192,7 +197,7 @@ foldtext.foldtext = function (buffer, window)
 end
 
 --- Setup function
----@param user_config foldtext.cofig?
+---@param user_config? foldtext.config
 foldtext.setup = function (user_config)
 	---|fS
 

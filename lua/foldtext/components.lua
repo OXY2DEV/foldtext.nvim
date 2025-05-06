@@ -10,7 +10,7 @@ local function eval (val, ...)
 	local primary_eval = {};
 
 	if type(val) == "table" then
-		primary_eval = val;
+		primary_eval = vim.deepcopy(val);
 	elseif type(val) == "function" then
 		local can_eval, new_val = pcall(val, ...);
 
@@ -225,13 +225,13 @@ end
 ---@param buffer integer
 ---@param config foldtext.section
 ---@return foldtext.fragment[]
-components.section = function (buffer, _, config)
+components.section = function (buffer, window, config)
 	---|fS
 
 	if vim.islist(config.output) then
 		return config.output;
 	elseif type(config.output) == "function" then
-		local can_call, result = pcall(config.output, buffer);
+		local can_call, result = pcall(config.output, buffer, window);
 		return can_call and result or {};
 	end
 
@@ -245,6 +245,7 @@ end
 components.fold_size = function (_, _, config)
 	---|fS "doc: Fold size"
 
+	---@type integer
 	local size = (vim.v.foldend - vim.v.foldstart) + 1;
 
 	return {

@@ -146,6 +146,20 @@ foldtext.attach = function (window)
 
 	---@type integer
 	local buffer = vim.api.nvim_win_get_buf(window);
+	local ft, bt = vim.bo[buffer].ft, vim.bo[buffer].bt;
+
+	if vim.list_contains(foldtext.config.ignore_buftypes or {}, bt) then
+		return;
+	elseif vim.list_contains(foldtext.config.ignore_filetypes or {}, ft) then
+		return;
+	elseif foldtext.config.condition then
+		local ran_cond, cond = pcall(foldtext.config.condition, buffer, window);
+
+		if ran_cond and not cond then
+			return;
+		end
+	end
+
 	---@type string Foldtext format.
 	local foldtext_pattern = string.gsub(foldtext.FDT, "%%d", "%d+");
 

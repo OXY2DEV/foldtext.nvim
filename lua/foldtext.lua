@@ -40,7 +40,9 @@ foldtext.config = {
 			---|fE
 		},
 
-		fallback = {
+		ts_expr = {
+			---|fS "config: Tree-sitter fold configuration"
+
 			condition = function (_, window)
 				return vim.wo[window].foldmethod == "expr" and vim.wo[window].foldexpr == "v:lua.vim.treesitter.foldexpr()";
 			end,
@@ -53,6 +55,8 @@ foldtext.config = {
 					hl = "@comment"
 				}
 			},
+
+			---|fE
 		}
 	}
 };
@@ -109,7 +113,7 @@ foldtext.update_ID = function (window)
 		elseif vim.list_contains(_config.buftypes or {}, bt) then
 			return true;
 		elseif _config.condition then
-			local ran_cond, cond = pcall(_config.condition, window);
+			local ran_cond, cond = pcall(_config.condition, buffer, window);
 
 			if ran_cond and cond then
 				return true;

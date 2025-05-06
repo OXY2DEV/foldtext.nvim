@@ -228,10 +228,10 @@ end
 components.section = function (buffer, window, config)
 	---|fS
 
-	if vim.islist(config.output) then
-		return config.output;
+	if vim.islist(config.output --[[ @as foldtext.fragment[] ]]) then
+		return config.output --[[ @as foldtext.fragment[] ]];
 	elseif type(config.output) == "function" then
-		local can_call, result = pcall(config.output, buffer, window);
+		local can_call, result = pcall(config.output --[[ @as foldtext_dynamic_fragments ]], buffer, window);
 		return can_call and result or {};
 	end
 

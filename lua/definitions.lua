@@ -1,6 +1,9 @@
 ---@meta
 
 
+---@alias foldtext_dynamic_fragments fun(buffer: integer, window: integer): foldtext.fragment[]
+
+
 ---@class foldtext.config Configuration for the foldtext.
 ---
 ---@field ignore_filetypes? string[]
@@ -77,7 +80,7 @@
 ---@field kind "section"
 ---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
 ---
----@field output foldtext.fragment[] | fun(buffer: integer, window: integer): foldtext.fragment[] Stuff to show on the foldtext.
+---@field output foldtext.fragment[] | foldtext_dynamic_fragments
 
 
 ---@class foldtext.fold_size Configuration for the fold size component.

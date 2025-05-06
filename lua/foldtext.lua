@@ -2,10 +2,12 @@ local foldtext = {};
 local components = require("foldtext.components")
 
 ---@type string The value of 'foldtext'.
-foldtext.FDT = "v:lua.require('foldtext').foldtext(%d,%d)";
+foldtext.FDT = "v:lua.require('foldtext').foldtext(%d)";
 
 ---@type foldtext.config
 foldtext.config = {
+	ignore_buftypes = { "nofile" },
+
 	styles = {
 		default = {
 			---|fS "config: Default configuration"
@@ -55,23 +57,16 @@ foldtext.config = {
 	}
 };
 
---- Detaches from the windows containing
---- `buffer`
----@param buffer integer
-foldtext.detach = function (buffer)
+--- Detaches from the window.
+---@param window integer
+foldtext.detach = function (window)
 	---|fS
 
-	---@type string Pattern for our foldtext.
-	local pattern = string.format(foldtext.FDT, "%d+");
+	---@type string Foldtext format.
+	local foldtext_pattern = string.gsub(foldtext.FDT, "%%d", "%d+");
 
-	for _, win in ipairs(vim.fn.win_findbuf(buffer)) do
-		---@type string The window's foldtext.
-		local _foldtext = vim.wo[win].foldtext;
-
-		if string.match(_foldtext, pattern) then
-			vim.wo[win].fillchars = ""
-			vim.wo[win].foldtext = "";
-		end
+	if string.match(vim.wo[window].foldtext, foldtext_pattern) then
+		vim.wo[window].foldtext = "";
 	end
 
 	---|fE
@@ -95,88 +90,85 @@ foldtext.set_opt = function (win)
 	---|fE
 end
 
----@param buffer integer
-foldtext.attach = function (buffer)
+foldtext.update_ID = function (window)
 	---|fS
 
-	if not buffer or not vim.api.nvim_buf_is_valid(buffer) then
-		return;
-	end
+	local buffer = vim.api.nvim_win_get_buf(window);
+	local ft, bt = vim.bo[buffer].ft, vim.bo[buffer].bt;
 
-	local bt, ft = vim.bo[buffer].bt, vim.bo[buffer].ft;
-
-	if vim.list_contains(foldtext.config.ignore_buftypes or {}, bt) or vim.list_contains(foldtext.config.ignore_filetypes or {}, ft) then
-		-- Ignore these buffers.
-		foldtext.detach(buffer);
-		return;
-	end
-
-	---@param style table
-	---@return boolean
-	local function is_valid_style (style, window)
-		---|fS
-
-		if style.supported_ft and vim.list_contains(style.supported_ft, ft) == false then
-			return false;
-		elseif style.supported_bt and vim.list_contains(style.supported_bt, bt) == false then
-			return false;
-		elseif not style.condition then
-			return true;
-		end
-
-		local can_run, valid = pcall(style.condition, buffer, window);
-
-		if can_run == false or valid == false then
-			return false;
-		else
-			return true;
-		end
-
-		---|fE
-	end
-
-	---@type string[]
+	local fd_ID = "default";
 	local keys = vim.tbl_keys(foldtext.config.styles or {});
-	table.sort(keys);
 
-	for _, win in ipairs(vim.fn.win_findbuf(buffer)) do
-		local fdID = "default";
+	local function is_valid (key)
+		local _config = (foldtext.config.styles or {})[key];
 
-		for _, k in ipairs(keys) do
-			local style = foldtext.config.styles[k];
+		if not _config then
+			return false;
+		elseif vim.list_contains(_config.filetypes or {}, ft) then
+			return true;
+		elseif vim.list_contains(_config.buftypes or {}, bt) then
+			return true;
+		elseif _config.condition then
+			local ran_cond, cond = pcall(_config.condition, window);
 
-			if k == "default" then
-				goto continue;
-			elseif foldtext.config.condition then
-				local ran_cond, cond = pcall(foldtext.config.condition, buffer, win);
-
-				if ran_cond and not cond then
-					goto continue;
-				end
+			if ran_cond and cond then
+				return true;
 			end
-
-			if is_valid_style(style, win) then
-				fdID = k;
-				break;
-			end
-
-			::continue::
 		end
 
-		vim.w[win].__fdID = fdID;
-
-		foldtext.set_opt(win);
-		vim.wo[win].foldtext = string.format(foldtext.FDT, buffer, win);
-
-		return;
+		return false;
 	end
+
+	for _, key in ipairs(keys) do
+		if key ~= "default" and is_valid(key) then
+			fd_ID = key;
+			break;
+		end
+	end
+
+	vim.w[window].__fdID = fd_ID;
 
 	---|fE
 end
 
----@param buffer integer
 ---@param window integer
-foldtext.foldtext = function (buffer, window)
+foldtext.attach = function (window)
+	---|fS
+
+	if not window or not vim.api.nvim_win_is_valid(window) then
+		-- Do not attach to non-existing windows.
+		return;
+	end
+
+	---@type integer
+	local buffer = vim.api.nvim_win_get_buf(window);
+	---@type string Foldtext format.
+	local foldtext_pattern = string.gsub(foldtext.FDT, "%%d", "%d+");
+
+	if string.match(vim.wo[window].foldtext or "", foldtext_pattern) then
+		local buf, win = string.match(vim.wo[window].foldtext, "%((%d+),(%d+)%)");
+
+		if buf == buffer and win == window then
+			-- Already attached only update ID.
+			foldtext.update_ID(window);
+			return;
+		end
+	end
+
+	foldtext.set_opt(window);
+	vim.wo[window].foldtext = string.format(foldtext.FDT, window);
+
+	foldtext.update_ID(window);
+
+	---|fE
+end
+
+---@param window integer
+foldtext.foldtext = function (window)
+	---|fS
+
+	local buffer = vim.api.nvim_win_get_buf(window);
+
 	local ID = vim.w[window].__fdID or "default";
 	local config = foldtext.config.styles[ID];
 
@@ -194,6 +186,8 @@ foldtext.foldtext = function (buffer, window)
 	end
 
 	return {};
+
+	---|fE
 end
 
 --- Setup function

@@ -9,18 +9,23 @@ vim.api.nvim_create_autocmd("OptionSet", {
 		local valid = { "filetype", "buftype", "foldmethod", "foldexpr" };
 
 		if vim.list_contains(valid, event.match) then
-			for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
-				require("foldtext").attach(buffer);
+			for _, win in ipairs(vim.api.nvim_list_wins()) do
+				require("foldtext").attach(win);
 			end
 		end
 	end
 });
 
--- Update style for buffers that will be shown.
-vim.api.nvim_create_autocmd("BufWinEnter", {
+-- Update style for windows that will be shown.
+vim.api.nvim_create_autocmd({
+	"VimEnter",
+	"WinEnter"
+}, {
 	group = augroup,
-	callback = function (event)
-		require("foldtext").attach(event.buf);
+	callback = function ()
+		for _, win in ipairs(vim.api.nvim_list_wins()) do
+			require("foldtext").attach(win);
+		end
 	end
 });
 

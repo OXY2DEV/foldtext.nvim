@@ -1,5 +1,5 @@
---- Components for the fold text.
-local components = {};
+--- Parts for the fold text.
+local parts = {};
 
 ---@param val any
 ---@param ... any
@@ -45,7 +45,7 @@ end
 ---@param _ integer
 ---@param config foldtext.bufline
 ---@return foldtext.fragment[]
-components.bufline = function (buffer, _, config)
+parts.bufline = function (buffer, _, config)
 	---|fS "doc: Tree-sitter highlighted text"
 
 	local start, stop = vim.fn.getbufline(buffer, vim.v.foldstart)[1], vim.fn.getbufline(buffer, vim.v.foldend)[1];
@@ -147,7 +147,7 @@ end
 ---@param _ integer
 ---@param config foldtext.description
 ---@return foldtext.fragment[]
-components.description = function (buffer, _, config)
+parts.description = function (buffer, _, config)
 	---|fS "doc: Conventional commits style messages"
 
 	local kind_styles = vim.tbl_deep_extend("force", {
@@ -225,7 +225,7 @@ end
 ---@param buffer integer
 ---@param config foldtext.section
 ---@return foldtext.fragment[]
-components.section = function (buffer, window, config)
+parts.section = function (buffer, window, config)
 	---|fS
 
 	if vim.islist(config.output --[[ @as foldtext.fragment[] ]]) then
@@ -242,7 +242,7 @@ end
 
 ---@param config foldtext.fold_size
 ---@return table
-components.fold_size = function (_, _, config)
+parts.fold_size = function (_, _, config)
 	---|fS "doc: Fold size"
 
 	---@type integer
@@ -262,7 +262,7 @@ end
 ---@param buffer number
 ---@param config foldtext.indent
 ---@return foldtext.fragment[]
-components.indent = function (buffer, _, config)
+parts.indent = function (buffer, _, config)
 	---|fS "doc: Indentation"
 
 	local line = table.concat(
@@ -280,7 +280,7 @@ end
 ---@param buffer integer
 ---@param window integer
 ---@return foldtext.fragment[]
-components.handle = function (items, buffer, window)
+parts.handle = function (items, buffer, window)
 	---|fS
 
 	if vim.islist(items) == false then
@@ -301,7 +301,7 @@ components.handle = function (items, buffer, window)
 			end
 		end
 
-		can_call, result = pcall(components[_item.kind or ""], buffer, window, item, output);
+		can_call, result = pcall(parts[_item.kind or ""], buffer, window, item, output);
 
 		if can_call and result then
 			output = vim.list_extend(output, result);
@@ -315,4 +315,4 @@ components.handle = function (items, buffer, window)
 	---|fE
 end
 
-return components;
+return parts;

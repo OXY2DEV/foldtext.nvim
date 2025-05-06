@@ -43,7 +43,7 @@
 ---| foldtext.indent
 
 
----@class foldtext.bufline Configuration for the buffer-line component.
+---@class foldtext.bufline Configuration for the buffer-line part.
 ---
 ---@field kind "bufline"
 ---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
@@ -52,7 +52,7 @@
 ---@field hl string Highlight group for the delimiter.
 
 
----@class foldtext.description Configuration for the fold description component.
+---@class foldtext.description Configuration for the fold description part.
 ---
 ---@field kind "description"
 ---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
@@ -83,7 +83,7 @@
 ---@field output foldtext.fragment[] | foldtext_dynamic_fragments
 
 
----@class foldtext.fold_size Configuration for the fold size component.
+---@class foldtext.fold_size Configuration for the fold size part.
 ---
 ---@field kind "fold_size"
 ---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
@@ -100,7 +100,7 @@
 ---@field hl? string Main highlight group.
 
 
----@class foldtext.indent Configuration for the indentation component.
+---@class foldtext.indent Configuration for the indentation part.
 ---
 ---@field kind "indent"
 ---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean

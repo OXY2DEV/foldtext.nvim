@@ -1,5 +1,4 @@
 local foldtext = {};
-local components = require("foldtext.components")
 
 ---@type string The value of 'foldtext'.
 foldtext.FDT = "v:lua.require('foldtext').foldtext(%d)";
@@ -185,21 +184,22 @@ end
 foldtext.foldtext = function (window)
 	---|fS
 
+	local parts = require("foldtext.parts")
 	local buffer = vim.api.nvim_win_get_buf(window);
 
 	local ID = vim.w[window].__fdID or "default";
 	local config = foldtext.config.styles[ID];
 
 	---@type table[]
-	local parts = ID == "default" and config or (config.parts or {});
+	local foldtext_parts = ID == "default" and config or (config.parts or {});
 
-	if vim.islist(parts) then
-		return components.handle(parts, buffer, window);
-	elseif type(parts) == "function" then
-		local can_eval, eval = pcall(parts, buffer, window);
+	if vim.islist(foldtext_parts) then
+		return parts.handle(foldtext_parts, buffer, window);
+	elseif type(foldtext_parts) == "function" then
+		local can_eval, eval = pcall(foldtext_parts, buffer, window);
 
 		if can_eval and vim.islist(eval) then
-			return components.handle(eval, buffer, window);
+			return parts.handle(eval, buffer, window);
 		end
 	end
 

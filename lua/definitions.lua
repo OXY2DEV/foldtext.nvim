@@ -21,7 +21,7 @@
 ---@field filetypes? string[]
 ---@field buftypes? string[]
 ---
----@field condition fun(buffer: integer, window: integer): boolean
+---@field condition? fun(buffer: integer, window: integer): boolean
 ---@field parts foldtext_part[]
 
 ------------------------------------------------------------------------------

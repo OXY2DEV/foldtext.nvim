@@ -18,6 +18,9 @@
 
 ---@class foldtext.custom_style
 ---
+---@field filetypes? string[]
+---@field buftypes? string[]
+---
 ---@field condition fun(buffer: integer, window: integer): boolean
 ---@field parts foldtext_part[]
 
@@ -74,7 +77,7 @@
 ---@field kind "section"
 ---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
 ---
----@field output foldtext.fragment[] | fun(buffer: integer): foldtext.fragment[] Stuff to show on the foldtext.
+---@field output foldtext.fragment[] | fun(buffer: integer, window: integer): foldtext.fragment[] Stuff to show on the foldtext.
 
 
 ---@class foldtext.fold_size Configuration for the fold size component.

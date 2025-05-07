@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/OXY2DEV/foldtext.nvim/compare/v1.0.0...v2.0.0) (2025-05-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* Complete rewrite and new features
+
+### Code Refactoring
+
+* Complete rewrite and new features ([1ecd260](https://github.com/OXY2DEV/foldtext.nvim/commit/1ecd260ff0ab7d74f39f03ca4dd38879d40874d4))
+
 ## 1.0.0 (2024-08-22)
 
 

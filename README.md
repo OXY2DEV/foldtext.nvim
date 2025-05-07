@@ -1,9 +1,9 @@
 # 📂 Foldtext.nvim
 
-![demo_1](https://github.com/OXY2DEV/foldtext.nvim/tree/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_1.jpg)
-![demo_2](https://github.com/OXY2DEV/foldtext.nvim/tree/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_2.jpg)
-![demo_3](https://github.com/OXY2DEV/foldtext.nvim/tree/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_3.jpg)
-![demo_4](https://github.com/OXY2DEV/foldtext.nvim/tree/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_4.jpg)
+![demo_1](https://github.com/OXY2DEV/foldtext.nvim/raw/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_1.jpg)
+![demo_2](https://github.com/OXY2DEV/foldtext.nvim/raw/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_2.jpg)
+![demo_3](https://github.com/OXY2DEV/foldtext.nvim/raw/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_3.jpg)
+![demo_4](https://github.com/OXY2DEV/foldtext.nvim/raw/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_4.jpg)
 
 A *fancier* way to fold your code.
 

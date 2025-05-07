@@ -286,3 +286,135 @@ custom.lua
  }
 ```
 
+## 🧩 Parts
+
+Some built-in parts are provided in the plugin. These are,
+
+### bufline
+
+Shows the buffer line with tree-sitter syntax highlighting. Has the following options,
+
+```lua
+{
+    kind = "bufline",
+    -- Optional condition for this
+    -- part.
+    condition = function ()
+        return true;
+    end
+
+    -- Delimiter between the start/end line.
+    delimiter = "...",
+    -- Highlight group for `delimiter`.
+    hl = "@comment"
+```
+
+### description
+
+Conventional commit styled fold description. Has the following options,
+
+```lua
+{
+    kind = "description",
+    -- Optional condition for this
+    -- part.
+    condition = function ()
+        return true;
+    end
+
+    -- Pattern to detect the foldtext from the start line.
+    -- Here I am using, "feat: Keymaps" & "fix, Something's not right here"
+    pattern = '[\'"](.+)[\'"]',
+    styles = {
+        default = {
+            hl = "@comment",
+            icon = "💭 ",
+            icon_hl = nil
+        },
+
+        -- Style for `doc`(case-insensitive).
+        -- Options are merged with `default`
+        -- before being used.
+        doc = {
+            -- hl, icon_hl are inherited from
+            -- `default`.
+            icon = "📚 ",
+        }
+    }
+}
+```
+
+### section
+
+A section of the foldtext. Has the following options,
+
+```lua
+{
+    kind = "section",
+    -- Optional condition for this
+    -- part.
+    condition = function ()
+        return true;
+    end
+
+    -- Text to show for this section. Has
+    -- the same structure as virtual text.
+    -- [ text, highlight_group ][]
+    output = {
+        { "Hello, Neovim!", "Comment" }
+    },
+    -- Can also be a function!
+    output = function (buffer, window)
+        return {
+            { "Buf: " .. buffer },
+            { "Win: " .. window },
+        };
+    end
+}
+```
+
+### fold_size
+
+Shows the fold size. Has the following option,
+
+```lua
+{
+    kind = "fold_size",
+    -- Optional condition for this
+    -- part.
+    condition = function ()
+        return true;
+    end
+
+    -- Highlight group for the entire
+    -- part.
+    hl = "@comment",
+
+    icon = "←→ ",
+    icon_hl = nil,
+
+    padding_left = " ",
+    padding_left_hl = nil,
+
+    padding_right = " ",
+    padding_right_hl = nil,
+}
+```
+
+### indent
+
+Adds the fold's starting line's indentation. Has the following options,
+
+```lua
+{
+    kind = "indent",
+    -- Optional condition for this
+    -- part.
+    condition = function ()
+        return true;
+    end
+
+    hl = nil
+}
+```
+

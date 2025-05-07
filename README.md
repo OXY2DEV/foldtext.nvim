@@ -205,7 +205,7 @@ example.lua
 
 Parts have also been changed. These are,
 
-#### raw
+#### Deprecated: raw
 
 Has been deprecated in favor of `section`.
 
@@ -227,7 +227,7 @@ raw.lua
  }
 ```
 
-#### fold_size
+#### Deprecated: fold_size
 
 Has new options & option name changes,
 
@@ -254,7 +254,7 @@ fold_size.lua
  }
 ```
 
-#### indent
+#### Deprecated: indent
 
 Has new option & option name change,
 
@@ -272,7 +272,7 @@ indent.lua
  }
 ```
 
-#### custom
+#### Deprecated: custom
 
 Has been removed in favor of `section`,
 
@@ -320,6 +320,7 @@ Shows the buffer line with tree-sitter syntax highlighting. Has the following op
     delimiter = "...",
     -- Highlight group for `delimiter`.
     hl = "@comment"
+}
 ```
 
 ### description

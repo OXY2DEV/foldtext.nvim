@@ -1,17 +1,18 @@
 # 📂 Foldtext.nvim
 
 >[!NOTE]
-> `v2.0.0` is a **complete rewrite** of the original plugin. It is **not backwards compatible**.
+> If you are coming from `v1`, you should see the [migration](#-migration) section.
 >
-> You can always tag the plugin's version to `1.0.0` from your package manager until you are ready to migrate. Also see [migration](#-migration).
+> Also, You can always tag the plugin's version to `v1.0.0` from your package manager until you are ready to migrate.
 
 *Fancy* foldtext for `Neovim`.
 
 ## ✨ Features
 
-- Per window foldtext setup, allows showing different foldtext in different windows!
-- Allows customizing the foldtext with built-in reusable parts to make the process easier. Each part can also be individually enabled/disabled.
-- Completely different foldtext based on *filetype*, *buftype* & other conditions.
+- Fast, ~1ms load time.
+- Ability to use separate foldtext **per window**.
+- Foldtext parts to make things easier with ability to toggle them on-demand.
+- Automatically updates the used foldtext on `OptionSet`(only for `filetype`, `buftype`, `foldmethod` & `foldexpr`).
 
 ## 📦 Installation
 
@@ -98,7 +99,10 @@ require("foldtext").setup({
 });
 ```
 
-You can find the default configuration table [here]().
+You can find the default configuration table [here](https://github.com/OXY2DEV/foldtext.nvim/blob/main/lua/foldtext.lua#L8). A few custom foldtext are provided as examples. These are,
+
+- `default`, Used for **conventional-commit** style messages in foldtext. See [here](https://github.com/OXY2DEV/foldtext.nvim/blob/dev/lua/foldtext.lua#L13).
+- `ts_expr`, Used when tree-sitter expressions are used for folding. See [here](https://github.com/OXY2DEV/foldtext.nvim/blob/dev/lua/foldtext.lua#L44).
 
 ------
 

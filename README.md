@@ -60,6 +60,9 @@ You can install the plugin via `rocks.nvim` with the following command.
 
 The plugin can be configured via the `setup()` command. The configuration table has the following structure,
 
+>[!TIP]
+> You can check out the [example styles](https://github.com/OXY2DEV/foldtext.nvim/blob/main/lua/foldtext/examples.lua) file to see how different parts are used.
+
 ```lua
 require("foldtext").setup({
     -- Ignore buffers with these buftypes.
@@ -101,7 +104,7 @@ require("foldtext").setup({
 
 You can find the default configuration table [here](https://github.com/OXY2DEV/foldtext.nvim/blob/main/lua/foldtext.lua#L8). A few custom foldtext are provided as examples. These are,
 
-- `default`, Used for **conventional-commit** style messages in foldtext. See [here](https://github.com/OXY2DEV/foldtext.nvim/blob/dev/lua/foldtext.lua#L13).
+- `default`, Used for **conventional-commit** style messages(falls back to showing range if no description is found) in foldtext. See [here](https://github.com/OXY2DEV/foldtext.nvim/blob/dev/lua/foldtext.lua#L13).
 - `ts_expr`, Used when tree-sitter expressions are used for folding. See [here](https://github.com/OXY2DEV/foldtext.nvim/blob/dev/lua/foldtext.lua#L44).
 
 ------

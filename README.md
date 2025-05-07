@@ -5,6 +5,9 @@
 >
 > Also, You can always tag the plugin's version to `v1.0.0` from your package manager until you are ready to migrate.
 
+<img src="https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext.nvim-1.png">
+<img src="https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext.nvim-2.png">
+
 *Fancy* foldtext for `Neovim`.
 
 ## ✨ Features

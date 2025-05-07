@@ -58,7 +58,7 @@
 ---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
 ---
 ---@field pattern? string Pattern for detecting descriptions in a line.
----@field kinds? table<string, foldtext.description.kind>
+---@field styles? table<string, foldtext.description.kind>
 
 
 ---@class foldtext.description.kind Configuration for the conventional-commit style decorations.

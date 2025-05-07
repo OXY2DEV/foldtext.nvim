@@ -184,7 +184,7 @@ parts.description = function (buffer, _, config)
 		},
 
 		---|fE
-	}, config.kinds or {});
+	}, config.styles or {});
 
 	local function kind_style (kind)
 		return vim.tbl_extend("force", kind_styles.default, kind_styles[kind] or {});

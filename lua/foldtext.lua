@@ -184,6 +184,8 @@ end
 foldtext.foldtext = function (window)
 	---|fS
 
+	window = vim.api.nvim_win_is_valid(window) and window or vim.api.nvim_get_current_win();
+
 	local parts = require("foldtext.parts")
 	local buffer = vim.api.nvim_win_get_buf(window);
 
@@ -194,12 +196,14 @@ foldtext.foldtext = function (window)
 	local foldtext_parts = ID == "default" and config or (config.parts or {});
 
 	if vim.islist(foldtext_parts) then
-		return parts.handle(foldtext_parts, buffer, window);
+		local can_handle, output = pcall(parts.handle, foldtext_parts, buffer, window);
+		return can_handle and output or {};
 	elseif type(foldtext_parts) == "function" then
 		local can_eval, eval = pcall(foldtext_parts, buffer, window);
 
 		if can_eval and vim.islist(eval) then
-			return parts.handle(eval, buffer, window);
+			local can_handle, output = pcall(parts.handle, foldtext_parts, buffer, window);
+			return can_handle and output or {};
 		end
 	end
 
@@ -214,7 +218,13 @@ foldtext.setup = function (user_config)
 	---|fS
 
 	if type(user_config) == "table" then
-		foldtext.configuration = vim.tbl_deep_extend("force", foldtext.configuration, user_config);
+		local checked = require("foldtext.compat").check(user_config);
+
+		foldtext.config = vim.tbl_deep_extend(
+			"force",
+			foldtext.config,
+			checked or {}
+		);
 	end
 
 	---|fE

@@ -310,6 +310,11 @@ parts.handle = function (items, buffer, window)
 		::continue::
 	end
 
+	-- Filter invalid results.
+	output = vim.tbl_filter(function (part)
+		return type(part) == "table" and #part <= 2;
+	end, output);
+
 	return output;
 
 	---|fE

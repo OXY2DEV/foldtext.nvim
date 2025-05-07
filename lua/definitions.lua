@@ -1,93 +1,109 @@
 ---@meta
 
---- Configuration table for foldtext.nvim
----@class foldtext.cofig
----
---- Filetypes to ignore
----@field ft_ignore string[]?
----
---- Buftypes to ignore
----@field bt_ignore string[]?
----
---- Default foldtext
----@field default (foldtext.config.raw | foldtext.config.size | foldtext.config.indent | foldtext.config.custom)[]
----
---- Custom foldtext
----@field custom? foldtext.custom[]
+
+---@alias foldtext_dynamic_fragments fun(buffer: integer, window: integer): foldtext.fragment[]
 
 
---- Configuration table for the custom foldtext
----@class foldtext.custom
+---@class foldtext.config Configuration for the foldtext.
 ---
---- List of filetypes where this will be used
----@field ft? string[]
+---@field ignore_filetypes? string[]
+---@field ignore_buftypes? string[]
+---@field condition? fun(buffer: integer, window: integer): boolean
 ---
---- List of buftypes where this will be used
----@field bt? string[]
----
---- Condition for this foldtext
----@field condition? fun(win: number, buf: number): boolean
----
---- Condition for the part
----@field config (foldtext.config.raw | foldtext.config.size | foldtext.config.indent | foldtext.config.custom)[]
+---@field styles foldtext.styles
 
 
---- Configuration table for raw text
----@class foldtext.config.raw
+---@class foldtext.styles A foldtext style.
 ---
---- Condition for the part
----@field condition? fun(win: number, buf: number): boolean
----
---- Part type
----@field type string
----
---- The string to show
----@field text string | fun(win: number, buf: number): string
----
---- Highlight group for text
----@field hl (string | string[])?
+---@field default foldtext_part[]
+---@field [string] foldtext.custom_style
 
 
---- Configuration table for fold size
----@class foldtext.config.size
+---@class foldtext.custom_style
 ---
---- Condition for the part
----@field condition? fun(win: number, buf: number): boolean
+---@field filetypes? string[]
+---@field buftypes? string[]
 ---
---- Part type
----@field type string
+---@field condition? fun(buffer: integer, window: integer): boolean
+---@field parts foldtext_part[]
+
+------------------------------------------------------------------------------
+
+---@class foldtext.fragment Fragment of the foldtext.
 ---
---- Prefix to add before the number
----@field prefix string?
----
---- Postfix to add after the number
----@field postfix string?
----
---- Highlight group for the part
----@field hl string?
+---@field [1] string Text to show.
+---@field [2]? string Highlight group for the text.
 
 
---- Configuration table for indent
----@class foldtext.config.indent
----
---- Condition for the part
----@field condition? fun(win: number, buf: number): boolean
----
---- Part type
----@field type string
----
---- Highlight group for the indent
----@field hl string?
+---@alias foldtext_part
+---| foldtext.bufline
+---| foldtext.description
+---| foldtext.section
+---| foldtext.fold_size
+---| foldtext.indent
 
 
---- Configuration table for custom part
----@class foldtext.config.custom
+---@class foldtext.bufline Configuration for the buffer-line part.
 ---
---- Condition for the part
----@field condition? fun(win: number, buf: number): boolean
+---@field kind "bufline"
+---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
 ---
---- Part type
----@field type string
+---@field delimiter string Text to put between the start & end line.
+---@field hl string Highlight group for the delimiter.
+
+
+---@class foldtext.description Configuration for the fold description part.
 ---
---- Handler for the foldtext
----@field handler fun(win: number, buf: number): [string, string] | [ string, string ][]
+---@field kind "description"
+---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
+---
+---@field pattern? string Pattern for detecting descriptions in a line.
+---@field styles? table<string, foldtext.description.kind>
+
+
+---@class foldtext.description.kind Configuration for the conventional-commit style decorations.
+---
+---@field icon? string
+---@field icon_hl? string
+---
+---@field scope_format? string Text format for showing the scope.
+---@field scope_hl? string
+---
+---@field separator? string Separator between the scope and the text.
+---@field separator_hl? string
+---
+---@field hl? string
+
+
+---@class foldtext.section Configuration for a section of the foldtext.
+---
+---@field kind "section"
+---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
+---
+---@field output foldtext.fragment[] | foldtext_dynamic_fragments
+
+
+---@class foldtext.fold_size Configuration for the fold size part.
+---
+---@field kind "fold_size"
+---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
+---
+---@field padding_left? string
+---@field padding_left_hl? string
+---
+---@field icon? string
+---@field icon_hl? string
+---
+---@field padding_right? string
+---@field padding_right_hl? string
+---
+---@field hl? string Main highlight group.
+
+
+---@class foldtext.indent Configuration for the indentation part.
+---
+---@field kind "indent"
+---@field condition? fun(buffer: integer, window: integer, parts: foldtext_part[]): boolean
+---
+---@field hl? string
+

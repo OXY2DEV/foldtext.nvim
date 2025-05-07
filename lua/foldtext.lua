@@ -1,436 +1,190 @@
 local foldtext = {};
-local renderer = require("foldtext.renderer")
 
---- Gets attached windows of a buffer
----@param buffer number
----@return number[]
-foldtext.get_attached_wins = function (buffer)
-	local windows = vim.api.nvim_list_wins();
-	local _f = {};
+---@type string The value of 'foldtext'.
+foldtext.FDT = "v:lua.require('foldtext').foldtext()";
+foldtext.format = "v:lua%.require%('foldtext'%)%.foldtext%(%)";
 
-	for _, win in ipairs(windows) do
-		if vim.api.nvim_win_get_buf(win) == buffer then
-			table.insert(_f, win);
-		end
-	end
+---@type foldtext.config
+foldtext.config = {
+	ignore_filetypes = {},
+	ignore_buftypes = {},
 
-	return _f;
-end
+	styles = {
+		default = {
+			---|fS "config: Default configuration"
+			{ kind = "indent", },
+			{ kind = "description" },
+			{
+				kind = "fold_size",
+				condition = function (_, _, parts)
+					return #parts > 1;
+				end,
 
---- Checks if an input is a list or not
----@param input any
----@return boolean
-foldtext.isList = function (input)
-	if type(input) ~= "table" then
-		return false;
-	end
+				padding_left = " ",
+				icon = "󰘖 ",
 
-	for _, item in ipairs(input) do
-		if type(item) ~= "table" then
-			return false;
-		end
-	end
+				hl = "@conditional"
+			},
+			{
+				kind = "fold_size",
+				condition = function (_, _, parts)
+					return #parts == 1;
+				end,
 
-	return true;
-end
+				icon = "󰘖 ",
+				padding_right = " lines folded!",
 
---- Returns table containing values from a table containing
---- functions(doesn't mutate original table)
----@param tbl table
----@param ... any
----@return table
-foldtext.value = function (tbl, ...)
-	local _t = {};
-
-	for k, v in pairs(tbl) do
-		if vim.list_contains({ "handler" }, k) or vim.islist(tbl.__skip) and vim.list_contains(tbl.__skip, k) then
-			_t[k] = v;
-		elseif pcall(v, ...) then
-			_t[k] = v(...);
-		else
-			_t[k] = v;
-		end
-	end
-
-	return _t;
-end
-
---- Missing math.clamp() function
----@param value number
----@param min number
----@param max number
----@return number
-foldtext.clamp = function (value, min, max)
-	return math.max(math.min(value, max), min);
-end
-
-
---- Default configuration table
----@type foldtext.cofig
-foldtext.configuration = {
-	bt_ignore = {},
-	ft_ignore = {},
-
-	default = {
-		---+ ${conf,Default foldtext}
-		{
-			type = "raw",
-			text = function (win)
-				local w = vim.api.nvim_win_get_width(win);
-				local off = vim.fn.getwininfo(win)[1].textoff;
-				local diff = vim.fn.strchars(" " .. tostring(vim.v.foldend - vim.v.foldstart) .. " lines ");
-
-				return string.rep("─", math.floor((w - off - diff) / 2));
-			end,
-			hl = "Comment",
-
-			gradient_repeat = true
+				padding_right_hl = "@comment",
+				icon_hl = "@conditional",
+				hl = "@number",
+			}
+			---|fE
 		},
-		{
-			type = "fold_size",
-			prefix = " ",
-			postfix = " lines "
-		},
-		{
-			type = "raw",
-			text = function (win)
-				local w = vim.api.nvim_win_get_width(win);
-				local off = vim.fn.getwininfo(win)[1].textoff;
-				local diff = vim.v.foldend - vim.v.foldstart;
 
-				return string.rep("─", math.ceil((w - off - 2 - vim.fn.strchars(diff)) / 2));
+		ts_expr = {
+			---|fS "config: Tree-sitter fold configuration"
+
+			condition = function (_, window)
+				return vim.wo[window].foldmethod == "expr" and vim.wo[window].foldexpr == "v:lua.vim.treesitter.foldexpr()";
 			end,
-			hl = "Comment",
 
-			gradient_repeat = true
-		},
-		---_
-	},
-
-	custom = {
-		{
-			---+ ${conf, Markdown detail tag foldtext}
-			ft = { "markdown" },
-			condition = function (_, buf)
-				local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
-
-				if ln:match("^%s*<summary>(.-)</summary>") then
-					return true;
-				else
-					return false;
-				end
-			end,
-			config = {
+			parts = {
 				{
-					type = "indent",
-					hl = "Normal"
-				},
-				{
-					type = "raw",
-					text = " ",
-					hl = "Title"
-				},
-				{
-					type = "custom",
-					handler = function (_, buf)
-						local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
+					kind = "bufline",
 
-						return { ln:match("^%s*<summary>(.-)</summary>"), "Title" };
-					end
+					delimiter = " ... ",
+					hl = "@comment"
 				}
-			}
-			---_
-		},
-		{
-			---+ ${conf, Identifier folds}
-			ft = { "lua" },
-			condition = function (_, buf)
-				local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
+			},
 
-				if ln:match("%${(.+),?.*}") then
-					return true;
-				else
-					return false;
-				end
-			end,
-			config = {
-				{
-					type = "indent"
-				},
-				{
-					type = "custom",
-					handler = function (_, buf)
-						local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
-						local tag = ln:match("%${(%a+).*}");
-
-						local tags = {
-							default = { "  " },
-							conf = { "  ", "Title" },
-							ui = { " 󰨵 ", nil },
-							func = { " 󰡱 ", nil },
-							hl = { "  ", nil },
-							calc = { " 󰃬 ", nil },
-							dep = { "  ", nil }
-						};
-
-						return not tags[tag] and tags.default or tags[tag];
-					end
-				},
-				{
-					type = "custom",
-					handler = function (_, buf)
-						local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
-						local txt = ln:match("%${.+,(.*)}") or " Fold";
-
-						return { txt:gsub("^%s*", "") .. ", ", "Comment" };
-					end
-				},
-				{
-					type = "fold_size",
-					hl = "Title"
-				},
-				{
-					type = "raw",
-					text = " lines",
-					hl = "Comment"
-				}
-			}
-			---_
-		},
-		{
-			---+ ${conf, Conf-doc link folds}
-			ft = { "lua" },
-			condition = function (_, buf)
-				local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
-
-				if ln:match("%${(link)=.-}") then
-					return true;
-				else
-					return false;
-				end
-			end,
-			config = {
-				{
-					type = "raw",
-					text = "  ",
-					hl = "Comment"
-				},
-				{
-					type = "custom",
-					handler = function (_, buf)
-						local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
-						local from = ln:match("from: (.-);") or "";
-						local r_1, r_2 = ln:match("range: (%d+),%d+;"), ln:match("range: %d+,(%d+);");
-
-						return {
-							{ from, "Comment" },
-							{ r_1 and "[" .. r_1 or "", "Comment" },
-							{ r_2 and "," .. r_2 .. "]" or "", "Comment" },
-						};
-					end
-				},
-				{
-					type = "custom",
-					handler = function (_, buf)
-						local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
-						local tag = ln:match("%${link=(.-)}") or "default";
-
-						local tags = {
-							default = { "  " },
-							conf = { "  ", "Title" },
-							ui = { " 󰨵", nil },
-							func = { " 󰡱 ", nil },
-							hl = { "  ", nil },
-							calc = { " 󰃬 ", nil },
-							dep = { "  ", nil }
-						};
-
-						return not tags[tag] and tags.default or tags[tag];
-					end
-				}
-			}
-			---_
-		},
-		{
-			---+ ${conf= Default fold text for lua}
-			ft = { "lua" },
-			config = {
-				{
-					type = "indent",
-				},
-				{
-					type = "raw",
-					text = "...",
-					hl = "TabLineSel"
-				},
-				{
-					type = "raw",
-					text = " -- ",
-					hl = "Comment"
-				},
-				{
-					type = "fold_size",
-				},
-				{
-					type = "raw",
-					text = " lines folded!",
-					hl = "Comment"
-				},
-				{
-					type = "custom",
-					handler = function (_, buf)
-						local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
-						local tag = ln:match("%${([^=}]+).-}$") or "default";
-						local text = ln:match("%${.-=(.+)}$") or "";
-
-						local tags = {
-							ns = { "" },
-							default = { "  " },
-							conf = { "  ", "Title" },
-							ui = { " 󰨵", nil },
-							func = { " 󰡱 ", nil },
-							hl = { "  ", nil },
-							calc = { " 󰃬 ", nil },
-							dep = { "  ", nil }
-						};
-
-						return {
-							not tags[tag] and tags.default or tags[tag],
-							text and { text, tags[tag][2] } or nil
-						};
-					end
-				}
-			}
-			---_
-		},
-
-
-		{
-			---+ ${conf, Foldtext for indent based folds}
-			condition = function (win, _)
-				if vim.wo[win].foldmethod == "indent" then
-					return true;
-				else
-					return false;
-				end
-			end,
-			config = {
-				{
-					type = "indent",
-				},
-				{
-					type = "raw",
-					text = "...",
-					hl = "TabLineSel"
-				},
-				{
-					type = "custom",
-					handler = function (_, buf)
-						local comment = vim.bo[buf].commentstring;
-						local before = comment:match("(.-)%%s")
-
-						return { " " .. before .. (before:match("(%s)$") and "" or " "), "Comment" };
-					end
-				},
-				{
-					type = "fold_size",
-				},
-				{
-					type = "raw",
-					text = " lines folded!",
-					hl = "Comment"
-				},
-				{
-					type = "custom",
-					handler = function (_, buf)
-						local comment = vim.bo[buf].commentstring;
-						local after = comment:match("%%s(.*)")
-
-						return { (after:match("(^%s)") and "" or " ") .. after, "Comment" };
-					end
-				},
-			}
-			---_
-		},
+			---|fE
+		}
 	}
 };
 
---- Renderer for the foldtext
----@param window number?
----@param buffer number?
----@return [ string, string ][]
-foldtext.text = function (window, buffer)
-	local _t = {};
-	local conf = foldtext.configuration.default or {};
+--- Detaches from the window.
+---@param window integer
+foldtext.detach = function (window)
+	---|fS
 
-	if not window then
-		window = vim.api.nvim_get_current_win();
+	if string.match(vim.wo[window].foldtext, foldtext.format) then
+		vim.wo[window].foldtext = "";
 	end
 
-	if not buffer then
-		buffer = vim.api.nvim_get_current_buf();
+	---|fE
+end
+
+foldtext.update_ID = function (window)
+	---|fS
+
+	if not string.match(vim.wo[window].foldtext or "", foldtext.format) then
+		return;
 	end
 
-	for _, custom in ipairs(foldtext.configuration.custom or {}) do
-		if custom.ft and not vim.list_contains(custom.ft, vim.bo[buffer].filetype) then
-			goto ignore;
-		end
+	local buffer = vim.api.nvim_win_get_buf(window);
+	local ft, bt = vim.bo[buffer].ft, vim.bo[buffer].bt;
 
-		if custom.bt and vim.list_contains(custom.bt, vim.bo[buffer].buftype) then
-			goto ignore;
-		end
+	if vim.list_contains(foldtext.config.ignore_buftypes or {}, bt) then
+		foldtext.detach(window);
+		return;
+	elseif vim.list_contains(foldtext.config.ignore_filetypes or {}, ft) then
+		foldtext.detach(window);
+		return;
+	elseif foldtext.config.condition then
+		local ran_cond, cond = pcall(foldtext.config.condition, buffer, window);
 
-		if custom.condition and pcall(custom.condition, window, buffer) then
-			if custom.condition(window, buffer) == false then
-				goto ignore;
-			else
-				conf = custom.config;
-				break;
+		if ran_cond and not cond then
+			foldtext.detach(window);
+			return;
+		end
+	end
+
+	local fd_ID = "default";
+	local keys = vim.tbl_keys(foldtext.config.styles or {});
+
+	local function is_valid (key)
+		local _config = (foldtext.config.styles or {})[key];
+
+		if not _config then
+			return false;
+		elseif vim.list_contains(_config.filetypes or {}, ft) then
+			return true;
+		elseif vim.list_contains(_config.buftypes or {}, bt) then
+			return true;
+		elseif _config.condition then
+			local ran_cond, cond = pcall(_config.condition, buffer, window);
+
+			if ran_cond and cond then
+				return true;
 			end
 		end
 
-		::ignore::
+		return false;
 	end
 
-	for _, part in ipairs(conf) do
-		if part.condition then
-			if part.condition == false then
-				goto ignorePart;
-			elseif pcall(part.condition, window, buffer) and part.condition(window, buffer) == false then
-				goto ignorePart;
-			end
+	for _, key in ipairs(keys) do
+		if key ~= "default" and is_valid(key) then
+			fd_ID = key;
+			break;
 		end
-
-		part = foldtext.value(part, window, buffer)
-		local segmant;
-
-		if part.type == "raw" and pcall(renderer.raw, part) then
-			segmant = renderer.raw(part);
-		elseif part.type == "fold_size" and pcall(renderer.fold_size, part) then
-			segmant = renderer.fold_size(part);
-		elseif part.type == "indent" and pcall(renderer.indent, part, buffer) then
-			segmant = renderer.indent(part, buffer);
-		elseif part.type == "custom" and pcall(part.handler, window, buffer) then
-			segmant = part.handler(window, buffer);
-		end
-
-		if foldtext.isList(segmant) then
-			_t = vim.list_extend(_t, segmant);
-		elseif type(segmant) == "table" then
-			table.insert(_t, segmant);
-		end
-		::ignorePart::
 	end
 
-	return _t;
+	vim.w[window].__fdID = fd_ID;
+
+	---|fE
+end
+
+foldtext.foldtext = function ()
+	---|fS
+
+	local window = vim.api.nvim_get_current_win();
+
+	local parts = require("foldtext.parts")
+	local buffer = vim.api.nvim_win_get_buf(window);
+
+	if not vim.w[window].__fdID then
+		foldtext.update_ID(window);
+	end
+
+	local ID = vim.w[window].__fdID or "default";
+	local config = foldtext.config.styles[ID];
+
+	---@type table[]
+	local foldtext_parts = ID == "default" and config or (config.parts or {});
+
+	if vim.islist(foldtext_parts) then
+		local can_handle, output = pcall(parts.handle, foldtext_parts, buffer, window);
+		return can_handle and output or {};
+	elseif type(foldtext_parts) == "function" then
+		local can_eval, eval = pcall(foldtext_parts, buffer, window);
+
+		if can_eval and vim.islist(eval) then
+			local can_handle, output = pcall(parts.handle, foldtext_parts, buffer, window);
+			return can_handle and output or {};
+		end
+	end
+
+	return {};
+
+	---|fE
 end
 
 --- Setup function
----@param user_config foldtext.cofig?
+---@param user_config? foldtext.config
 foldtext.setup = function (user_config)
+	---|fS
+
 	if type(user_config) == "table" then
-		foldtext.configuration = vim.tbl_deep_extend("force", foldtext.configuration, user_config);
+		local checked = require("foldtext.compat").check(user_config);
+
+		foldtext.config = vim.tbl_deep_extend(
+			"force",
+			foldtext.config,
+			checked or {}
+		);
 	end
+
+	---|fE
 end
 
 return foldtext;

@@ -1,29 +1,36 @@
-local foldtext = require("foldtext");
+---@type integer An autocmd group is used to group multiple event listeners together.
+local augroup = vim.api.nvim_create_augroup("foldtext", {});
 
--- Setup default options
-vim.o.fillchars = "fold: "
-vim.o.foldtext = "v:lua.require('foldtext').text()";
+-- Set defaults.
+vim.o.foldtext = "v:lua.require('foldtext').foldtext()";
+vim.opt.fillchars = {
+	fold = " "
+};
 
--- Create autocmd
-vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
+-- Update style for buffers whose option has changed.
+vim.api.nvim_create_autocmd("OptionSet", {
+	group = augroup,
 	callback = function (event)
-		local buffer = event.buf;
+		---@type string[]
+		local valid = { "filetype", "buftype", "foldmethod", "foldexpr" };
 
-		if foldtext.configuration.bt_ignore and vim.list_contains(foldtext.configuration.bt_ignore, vim.bo[buffer].buftype) then
-			vim.wo[window].foldtext = "";
-			return;
-		end
-
-		if foldtext.configuration.ft_ignore and vim.list_contains(foldtext.configuration.ft_ignore, vim.bo[buffer].filetype) then
-			vim.wo[window].foldtext = "";
-			return;
-		end
-
-		local windows = foldtext.get_attached_wins(buffer);
-
-		for _, window in ipairs(windows) do
-			vim.wo[window].foldtext = "v:lua.require('foldtext').text(" .. window .. "," .. buffer .. ")";
+		if vim.list_contains(valid, event.match) then
+			for _, win in ipairs(vim.api.nvim_list_wins()) do
+				require("foldtext").update_ID(win);
+			end
 		end
 	end
-})
+});
 
+-- Clear the highlight group for fold text.
+vim.api.nvim_create_autocmd({
+	"VimEnter",
+	"ColorScheme"
+}, {
+	group = augroup,
+	callback = function ()
+		vim.api.nvim_set_hl(0, "Folded", {
+			link = "Normal"
+		});
+	end
+});

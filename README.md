@@ -1,17 +1,21 @@
 # 📂 Foldtext.nvim
 
-![demo_1](https://github.com/OXY2DEV/foldtext.nvim/raw/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_1.jpg)
-![demo_2](https://github.com/OXY2DEV/foldtext.nvim/raw/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_2.jpg)
-![demo_3](https://github.com/OXY2DEV/foldtext.nvim/raw/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_3.jpg)
-![demo_4](https://github.com/OXY2DEV/foldtext.nvim/raw/e39e136bdd691b8ecc250646fb4efe5dd2d0059c/images/foldtext_demo_4.jpg)
+>[!NOTE]
+> If you are coming from `v1`, you should see the [migration](#-migration) section.
+>
+> Also, You can always tag the plugin's version to `v1.0.0` from your package manager until you are ready to migrate.
 
-A *fancier* way to fold your code.
+<img src="https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext.nvim-1.png">
+<img src="https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext.nvim-2.png">
+
+*Fancy* foldtext for `Neovim`.
 
 ## ✨ Features
 
-- Dynamic foldtext. Can be customised *per-buffer* & *per-window*.
-- Allows customizing the foldtext with parts to make the process easier. Each part can also be individually enabled/disabled.
-- Completely different foldtext based on *filetype*, *buftype* & conditions.
+- Fast, ~1ms load time.
+- Ability to use separate foldtext **per window**.
+- Foldtext parts to make things easier with ability to toggle them on-demand.
+- Automatically updates the used foldtext on `OptionSet`(only for `filetype`, `buftype`, `foldmethod` & `foldexpr`).
 
 ## 📦 Installation
 
@@ -55,220 +59,372 @@ You can install the plugin via `rocks.nvim` with the following command.
 :Rocks install foldtext.nvim
 ```
 
-## 🧭 Example usage
+## 🔩 Configuration
 
-### 📜 Markdown
+The plugin can be configured via the `setup()` command. The configuration table has the following structure,
 
-Folds in markdown starting with a line containing `<summary></summary>` will show the text inside it.
-
-Try setting your `foldmethod` to `indent` and see what this code block looks like.
-
-```md
-<detail>
-    <summary>An example summary</summary>
-
-    Some text
-</detail>
-```
-
-You will see something like this.
-
-![md_fold](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_fold_1.jpg)
-
-This also works in other `foldmethods` too!
-
-### 📜 Lua
-
-In a `lua` file, if a fold's starting line contains `${}` with some text inside this will render as a custom fold.
-
-For example, folding this text will show a lua icon on the fold text
+>[!TIP]
+> You can check out the [example styles](https://github.com/OXY2DEV/foldtext.nvim/blob/main/lua/foldtext/examples.lua) file to see how different parts are used.
 
 ```lua
--- ${default}
-vim.print("Hello neovim");
+require("foldtext").setup({
+    -- Ignore buffers with these buftypes.
+    ignore_buftypes = {},
+    -- Ignore buffers with these filetypes.
+    ignore_filetypes = {},
+    -- Ignore buffers/windows if the result
+    -- is false.
+    condition = function ()
+        return true;
+    end,
+
+    styles = {
+        default = {
+            { kind = "bufline" }
+        },
+
+        -- Custom foldtext.
+        custom_a = {
+            -- Only on these filetypes.
+            filetypes = {},
+            -- Only on these buftypes.
+            buftypes = {},
+
+            -- Only if this condition is
+            -- true.
+            condition = function (win)
+                return vim.wo[win].foldmethod == "manual";
+            end,
+
+            -- Parts to create the foldtext.
+            parts = {
+                { kind = "fold_size" }
+            }
+        }
+    }
+});
 ```
 
-You can also add titles to your folds.
+You can find the default configuration table [here](https://github.com/OXY2DEV/foldtext.nvim/blob/main/lua/foldtext.lua#L8). A few custom foldtext are provided as examples. These are,
 
-```lua
--- ${func, A helper function}
-local function test()
-    vim.print("Test");
-end
+- `default`, Used for **conventional-commit** style messages(falls back to showing range if no description is found) in foldtext. See [here](https://github.com/OXY2DEV/foldtext.nvim/blob/dev/lua/foldtext.lua#L13).
+- `ts_expr`, Used when tree-sitter expressions are used for folding. See [here](https://github.com/OXY2DEV/foldtext.nvim/blob/dev/lua/foldtext.lua#L44).
+
+------
+
+Description about each option is given below,
+
+### ignore_buftypes
+
+- Type: `string[]`
+- Default: `{ "nofile" }`
+
+Buffer types to ignore.
+
+>[!NOTE]
+> `nofile` buffers may use folds for various things, so we ignore them.
+
+### ignore_filetypes
+
+- Type: `string[]`
+
+File types to ignore.
+
+### condition
+
+- Type: `fun(buffer: integer, window: integer): boolean`
+
+Function to determine if a window should be attached to. Used for defining additional conditions.
+
+### styles
+
+- Type: `foldtext.styles`
+
+Styles for different foldtexts.
+
+#### default
+
+- Type: `foldtext_part[]`
+
+Parts for the default foldtext. See [parts](#-parts) for more info.
+
+#### custom_a
+
+- Type: `foldtext.custom_style`
+
+Custom style for the foldtext. Here it's named `custom_a`.
+
+##### filetypes
+
+- Type: `string[]`
+
+File types where this style should be enabled.
+
+##### buftypes
+
+- Type: `string[]`
+
+Buffer types where this style should be enabled.
+
+##### condition
+
+- Type: `fun(buffer: integer, window: integer): boolean`
+
+Addition conditions for this style.
+
+##### parts
+
+- Type: `foldtext_part[]`
+
+Parts for this foldtext. See [parts](#-parts) for more info.
+
+### 🔄 Migration
+
+These are the option name changes for `v2.0.0`.
+
+```diff
+example.lua
+ {
+-    ft_ignore = {},
++    ignore_filetypes = {},
+
+-    bt_ignore = {},
++    ignore_buftypes = {},
+
+-    default = {},
+-    custom = {},
++    styles = {
++        default = {},
++        a = {}
++    }
+ }
 ```
 
-This becomes something like this,
+Parts have also been changed. These are,
 
-![lua_fold](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_fold_2.jpg)
+#### raw
 
-They also have various options,
+Has been deprecated in favor of `section`.
 
-- default, shows the lua logo
-- conf, shows a cog
-- ui, shows a phone
-- func, shows a function symbol
-- hl, shows a palette symbol
-- calc, shows a calculator
-- dep, shows a box
+```diff
+raw.lua
+ {
+-    type = "raw",
++    kind = "section",
 
-![lua_fold_2](https://github.com/OXY2DEV/foldtext.nvim/blob/images/images/foldtext_fold_3.jpg)
+     condition = function ()
+         return true;
+     end
 
-## 🔩 Configuration options
-
-Foldtext's configuration table is as follows
-
-```lua
-{
-    ft_ignore = {}, -- file types to ignore
-    bt_ignore = {}, -- buf types to ignore
-
-    default = {}, -- default fold text configuration
-    custom = {} -- Condition based fold text configurations
-}
+-    text = "abcd",
+-    hl = "Comment"
++    output = {
++       { "abcd", "Comment" },
++    }
+ }
 ```
 
-Foldtexts are created with *parts*. Each part is a table that shows some text in the foldtext.
+#### fold_size
+
+Has new options & option name changes,
+
+```diff
+fold_size.lua
+ {
++    condition = function ()
++        return true;
++    end
+
+-    type = "fold_size",
++    kind = "fold_size",
+ 
+     hl = "Special",
+ 
++    padding_left = nil,
++    padding_left_hl = nil,
+
++    padding_right = nil,
++    padding_right_hl = nil,
+
++    icon = nil,
++    icon_hl = nil,
+ }
+```
+
+#### indent
+
+Has new option & option name change,
+
+```diff
+indent.lua
+ {
++    condition = function ()
++        return true;
++    end
+
+-    type = "indent",
++    kind = "indent",
+ 
+     hl = "Comment"
+ }
+```
+
+#### custom
+
+Has been removed in favor of `section`,
+
+```diff
+custom.lua
+ {
++    condition = function ()
++        return true;
++    end
+
+-    type = "custom",
++    kind = "section",
+ 
+-    handler = function (window, buffer)
+-        return {
+-            { "text" }
+-        };
+-    end
++    output = function (buffer, window)
++        return {
++            { "text" }
++        };
++    end
+ }
+```
 
 ## 🧩 Parts
 
-Foldtext come with a few parts to get you started with creating foldtexts.
+Some built-in parts are provided in the plugin. These are,
+
+### bufline
+
+Shows the buffer line with tree-sitter syntax highlighting. Has the following options,
 
 ```lua
 {
-    type = "raw", -- Part type
-    condition = function (win, buf)
-        -- Condition for the part
+    kind = "bufline",
+    -- Optional condition for this
+    -- part.
+    condition = function ()
         return true;
     end
-}
+
+    -- Delimiter between the start/end line.
+    delimiter = "...",
+    -- Highlight group for `delimiter`.
+    hl = "@comment"
 ```
 
-### 🧩 Part: raw
+### description
 
-Shows some string in the fold text.
+Conventional commit styled fold description. Has the following options,
 
 ```lua
 {
-    type = "raw",
-    text = "Fold",
-    hl = "Folded"
-}
-```
-
-### 🧩 Part: fold_size
-
-Shows the number of lines folded.
-
-```lua
-{
-    type = "fold_size",
-    hl = "Special"
-}
-```
-
-### 🧩 Part: indent
-
-Indents the foldtext to match the original text.
-
->[!Note]
-> Fold texts do not scroll horizontally.
-
-```lua
-{
-    type = "indent",
-    hl = "CursorLine"
-}
-```
-
-### 🧩 Part: custom
-
-Allows writing a custom handler for the foldtext.
-
-```lua
-{
-    type = "custom",
-    handler = function (window, buffer)
-        -- { text, highlight_group }
-        return { "Hello world", "Special" };
+    kind = "description",
+    -- Optional condition for this
+    -- part.
+    condition = function ()
+        return true;
     end
+
+    -- Pattern to detect the foldtext from the start line.
+    -- Here I am using, "feat: Keymaps" & "fix, Something's not right here"
+    pattern = '[\'"](.+)[\'"]',
+    styles = {
+        default = {
+            hl = "@comment",
+            icon = "💭 ",
+            icon_hl = nil
+        },
+
+        -- Style for `doc`(case-insensitive).
+        -- Options are merged with `default`
+        -- before being used.
+        doc = {
+            -- hl, icon_hl are inherited from
+            -- `default`.
+            icon = "📚 ",
+        }
+    }
 }
 ```
 
-The function can also return a *list* of tables.
+### section
+
+A section of the foldtext. Has the following options,
 
 ```lua
 {
-    type = "custom",
-    handler = function (window, buffer)
-        -- { { text, highlight_group } }
+    kind = "section",
+    -- Optional condition for this
+    -- part.
+    condition = function ()
+        return true;
+    end
+
+    -- Text to show for this section. Has
+    -- the same structure as virtual text.
+    -- [ text, highlight_group ][]
+    output = {
+        { "Hello, Neovim!", "Comment" }
+    },
+    -- Can also be a function!
+    output = function (buffer, window)
         return {
-            { "Hello", "Special" },
-            { "world", "Normal" },
+            { "Buf: " .. buffer },
+            { "Win: " .. window },
         };
     end
 }
 ```
 
-## ✨ Custom foldtext
+### fold_size
 
-The `custom` option can be used to make `condition-based` foldtext.
-
-```lua
-custom = {
-    {
-        ft = {}, -- file types where it will be used
-        bt = {}, -- buf types where it will be used
-        condition = function (win, buf)
-            -- Additional conditions
-            return true;
-        end,
-
-        -- Configuration table
-        config = {}
-    }
-}
-```
-
->[!Tip]
-> You can use *ft*, *bt* & *cond* together for more control over the foldtext.
-
-### 👾 Example usage
-
-This foldtext is used in *markdown* files when the fold starts on a line containing a `<summary>` tag.
-
-It display whatever is used as the summary(kinda, like how Github does)
+Shows the fold size. Has the following option,
 
 ```lua
 {
-    ft = { "markdown" },
-    condition = function (_, buf)
-        local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
+    kind = "fold_size",
+    -- Optional condition for this
+    -- part.
+    condition = function ()
+        return true;
+    end
 
-        if ln:match("^%s*<summary>(.-)</summary>") then
-            return true;
-        else
-            return false;
-        end
-    end,
-    config = {
-        {
-            type = "indent",
-            hl = "TabLineSel"
-        },
-        {
-            type = "raw",
-            text = " ",
-            hl = "Title"
-        },
-        {
-            type = "custom",
-            handler = function (_, buf)
-                local ln = table.concat(vim.fn.getbufline(buf, vim.v.foldstart))
+    -- Highlight group for the entire
+    -- part.
+    hl = "@comment",
 
-                return { ln:match("^%s*<summary>(.-)</summary>"), "Title" };
-            end
-        }
-    }
+    icon = "←→ ",
+    icon_hl = nil,
+
+    padding_left = " ",
+    padding_left_hl = nil,
+
+    padding_right = " ",
+    padding_right_hl = nil,
+}
+```
+
+### indent
+
+Adds the fold's starting line's indentation. Has the following options,
+
+```lua
+{
+    kind = "indent",
+    -- Optional condition for this
+    -- part.
+    condition = function ()
+        return true;
+    end
+
+    hl = nil
 }
 ```
 

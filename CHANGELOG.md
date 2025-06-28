@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/OXY2DEV/foldtext.nvim/compare/v2.0.0...v2.1.0) (2025-06-28)
+
+
+### Features
+
+* **config:** Added some extra description types ([11b65d0](https://github.com/OXY2DEV/foldtext.nvim/commit/11b65d06b4f693aa0ecbd1456e905eb081984a53))
+
 ## [2.0.0](https://github.com/OXY2DEV/foldtext.nvim/compare/v1.0.0...v2.0.0) (2025-05-07)
 
 

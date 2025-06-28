@@ -183,8 +183,33 @@ parts.description = function (buffer, _, config)
 			icon_hl = "DiagnosticError",
 		},
 
+
+		code = {
+			icon = "󰁤 ",
+			icon_hl = "Constant",
+		},
+
+		func = {
+			icon = "󰡱 ",
+			icon_hl = "Function",
+		},
+
+		method = {
+			icon = "󰡱 ",
+			icon_hl = "@method",
+		},
+
+		var = {
+			icon = "󰏖 ",
+			icon_hl = "@variable.builtin",
+		},
+
 		---|fE
 	}, config.styles or {});
+
+	if not config.styles then
+		kind_styles.chunk = kind_styles.code;
+	end
 
 	local function kind_style (kind)
 		return vim.tbl_extend("force", kind_styles.default, kind_styles[kind] or {});

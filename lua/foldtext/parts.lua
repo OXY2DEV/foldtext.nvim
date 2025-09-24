@@ -294,9 +294,59 @@ parts.indent = function (buffer, _, config)
 		vim.fn.getbufline(buffer, vim.v.foldstart)
 	);
 
-	return {
-		{ line:match("^(%s*)"), config.hl }
-	};
+	if vim.o.list == false then
+		return {
+			{ line:match("^(%s*)"), config.hl }
+		};
+	end
+
+	local listchars = vim.o.listchars;
+
+	local tabchar = string.match(listchars, "tab:([^,]*)");
+	local spacechar = string.match(listchars, "space:([^,]*)");
+	local multispacechar = string.match(listchars, "multispace:([^,]*)");
+
+	local space_segment = multispacechar and string.rep(" ", vim.fn.strchars(multispacechar)) or nil;
+
+	local output = {};
+	---@type string
+	local indent = line:match("^(%s*)");
+
+	while #indent > 0 do
+		if space_segment and string.match(indent, "^" .. space_segment) then
+			table.insert(output, {
+				multispacechar,
+				config.hl or "LineNr"
+			});
+			indent = string.gsub(indent, "^" .. space_segment, "");
+		elseif tabchar and string.match(indent, "^\t") then
+			local tab_width = vim.fn.strdisplaywidth("\t");
+
+			indent = string.gsub(indent, "^\t", "");
+			table.insert(output, {
+				tabchar .. string.rep(" ", tab_width - vim.fn.strdisplaywidth(tabchar)),
+				config.hl or "LineNr"
+			});
+		else
+			local segment = string.match(indent, "^%s");
+
+			if spacechar then
+				table.insert(output, {
+					string.rep(spacechar, vim.fn.strchars(segment)),
+					config.hl or "LineNr"
+				});
+			else
+				table.insert(output, {
+					segment,
+					config.hl or "LineNr"
+				});
+			end
+
+			indent = string.gsub(indent, "^%s", "");
+		end
+	end
+
+	return output;
 
 	---|fE
 end

@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.0](https://github.com/OXY2DEV/foldtext.nvim/compare/v2.0.0...v2.1.0) (2026-05-28)
+
+
+### Features
+
+* Added option for custom text highlight for bufline ([3756a9f](https://github.com/OXY2DEV/foldtext.nvim/commit/3756a9faa3ada93411ed3c94578835d5a83648f7)), closes [#8](https://github.com/OXY2DEV/foldtext.nvim/issues/8)
+* **config:** Added some extra description types ([11b65d0](https://github.com/OXY2DEV/foldtext.nvim/commit/11b65d06b4f693aa0ecbd1456e905eb081984a53))
+* **parts:** Added support for `listchars` in indents ([97c3fbd](https://github.com/OXY2DEV/foldtext.nvim/commit/97c3fbdfca2ee37d4a8254e1d088c7f6b9d13578))
+
+
+### Bug Fixes
+
+* Added handling of special groups ([20c19ad](https://github.com/OXY2DEV/foldtext.nvim/commit/20c19ade796a5440b4065713c748492d174994c1)), closes [#8](https://github.com/OXY2DEV/foldtext.nvim/issues/8)
+
 ## [2.0.0](https://github.com/OXY2DEV/foldtext.nvim/compare/v1.0.0...v2.0.0) (2025-05-07)
 
 

@@ -64,6 +64,17 @@ parts.bufline = function (buffer, _, config)
 	--
 	-- virtcol = virtcol - 1;
 
+	local function handle_hl_captures(captures)
+		--- Capture names that do not contain highlights.
+		local no_hl = { "spell", "nospell", "conceal" };
+
+		for c = #captures, 1, -1 do
+			if captures[c] and not vim.list_contains(no_hl, captures[c].capture) then
+				return captures[c];
+			end
+		end
+	end
+
 	for p, part in ipairs(vim.fn.split(start, "\\zs")) do
 		---|fS "func: Start line of fold."
 
@@ -74,11 +85,11 @@ parts.bufline = function (buffer, _, config)
 		end
 
 		if #hl_captures > 0 then
-			local last = hl_captures[#hl_captures];
+			local visible = handle_hl_captures(hl_captures)
 
 			table.insert(fragments, {
 				part,
-				"@" .. last.capture .. "." .. last.lang
+				visible ~= nil and "@" .. visible.capture .. "." .. visible.lang or nil
 			});
 		else
 			table.insert(fragments, { part });
@@ -121,11 +132,11 @@ parts.bufline = function (buffer, _, config)
 		end
 
 		if #hl_captures > 0 then
-			local last = hl_captures[#hl_captures];
+			local visible = handle_hl_captures(hl_captures)
 
 			table.insert(fragments, {
 				part,
-				"@" .. last.capture .. "." .. last.lang
+				visible ~= nil and "@" .. visible.capture .. "." .. visible.lang or nil
 			});
 		else
 			table.insert(fragments, { part });

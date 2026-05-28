@@ -62,4 +62,61 @@ examples.detail = {
 	}
 };
 
+--- Markdown style headings for foldtext. Ref: #9
+examples.headings = {
+	condition = function (buffer, _window)
+		local next_line = table.concat(
+			vim.fn.getbufline(buffer, vim.v.lnum + 1)
+		);
+
+		return string.match(next_line, "(#+)%s+(.+)$") ~= nil;
+	end,
+
+	parts = {
+		{
+			kind = "section",
+			output = function (buffer)
+				local start_line = table.concat(
+					vim.fn.getbufline(buffer, vim.v.lnum),
+					""
+				);
+				local headings, content = string.match(start_line, "(#+)%s+(.+)$");
+
+				if not headings or not content then
+					return {};
+				end
+
+				---@type { icon: string, hl: string, icon_hl?: string }[]
+				local config = {
+					{
+						icon = "󰼏  ", hl = "MarkviewHeading1",
+					},
+					{
+						icon = "󰎨  ", hl = "MarkviewHeading2",
+					},
+					{
+						icon = "󰼑  ", hl = "MarkviewHeading3",
+					},
+					{
+						icon = "󰎲 ", hl = "MarkviewHeading4",
+					},
+					{
+						icon = "󰼓  ", hl = "MarkviewHeading5",
+					},
+					{
+						icon = "󰎴  ", hl = "MarkviewHeading6",
+					},
+				};
+
+				local heading_config = config[#headings] or config[1];
+
+				return {
+					{ heading_config.icon, heading_config.icon_hl or heading_config.hl },
+					{ content, heading_config.hl }
+				};
+			end
+		},
+	},
+}
+
 return examples;

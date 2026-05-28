@@ -89,10 +89,10 @@ parts.bufline = function (buffer, _, config)
 
 			table.insert(fragments, {
 				part,
-				visible ~= nil and "@" .. visible.capture .. "." .. visible.lang or nil
+				visible ~= nil and "@" .. visible.capture .. "." .. visible.lang or config.text_hl,
 			});
 		else
-			table.insert(fragments, { part });
+			table.insert(fragments, { part, config.text_hl });
 		end
 
 		::continue::
@@ -136,10 +136,10 @@ parts.bufline = function (buffer, _, config)
 
 			table.insert(fragments, {
 				part,
-				visible ~= nil and "@" .. visible.capture .. "." .. visible.lang or nil
+				visible ~= nil and "@" .. visible.capture .. "." .. visible.lang or config.text_hl,
 			});
 		else
-			table.insert(fragments, { part });
+			table.insert(fragments, { part, config.text_hl });
 		end
 
 		::continue::

@@ -319,7 +319,9 @@ Shows the buffer line with tree-sitter syntax highlighting. Has the following op
     -- Delimiter between the start/end line.
     delimiter = "...",
     -- Highlight group for `delimiter`.
-    hl = "@comment"
+    hl = "@comment",
+    -- Default highlight group for shown text.
+    text_hl = nil
 }
 ```
 

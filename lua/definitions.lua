@@ -50,6 +50,7 @@
 ---
 ---@field delimiter string Text to put between the start & end line.
 ---@field hl string Highlight group for the delimiter.
+---@field text_hl string Default highlight for shown text.
 
 
 ---@class foldtext.description Configuration for the fold description part.

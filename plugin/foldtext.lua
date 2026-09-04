@@ -3,9 +3,14 @@ local augroup = vim.api.nvim_create_augroup("foldtext", {});
 
 -- Set defaults.
 vim.o.foldtext = "v:lua.require('foldtext').foldtext()";
-vim.opt.fillchars = {
+--[[
+	FIX(option_set): Append options to not overwrite user set other `fillchars`
+
+	Closes #11
+]]
+vim.opt.fillchars:append({
 	fold = " "
-};
+});
 
 -- Update style for buffers whose option has changed.
 vim.api.nvim_create_autocmd("OptionSet", {
